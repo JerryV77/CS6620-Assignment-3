@@ -35,6 +35,17 @@ class S3Bucket:
             print(e.response['Error']['Message'])
             raise
 
+    def get_object(self, key):
+        try:
+            obj = self.s3.get_object(Bucket=self.bucket_name, Key=key)
+            return json.loads(obj['Body'].read().decode('utf-8'))
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'NoSuchKey':
+                return None
+            else:
+                print(e.response['Error']['Message'])
+                raise
+
     def delete_object(self, key):
         try:
             self.s3.delete_object(Bucket=self.bucket_name, Key=key)
