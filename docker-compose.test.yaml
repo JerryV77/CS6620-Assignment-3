@@ -2,22 +2,28 @@ version: '3.8'
 
 services:
   localstack:
-    image: localstack/localstack
+    image: localstack/localstack:latest
     environment:
       - SERVICES=dynamodb,s3
-      - DEFAULT_REGION=us-east-1
+      - EDGE_PORT=4566
+      - AWS_DEFAULT_REGION=us-east-1
     ports:
-      - "4566:4566"
-      - "4571:4571"
-    volumes:
-      - "./localstack:/var/lib/localstack"
+      - "4566-4597:4566-4597"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/health"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
   app:
     build: .
+    command: ["pytest", "tests/test_server.py"]
     environment:
       - DYNAMODB_ENDPOINT=http://localstack:4566
-      - AWS_DEFAULT_REGION=us-east-1
+      - S3_ENDPOINT=http://localstack:4566
       - AWS_ACCESS_KEY_ID=dummy
       - AWS_SECRET_ACCESS_KEY=dummy
-    command: sh -c "python -m unittest discover -s tests -p '*.py'"
+      - AWS_DEFAULT_REGION=us-east-1
     depends_on:
-      - localstack
+      localstack:
+        condition: service_healthy
