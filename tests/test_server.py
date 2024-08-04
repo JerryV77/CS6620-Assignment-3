@@ -19,6 +19,13 @@ class TestServer(unittest.TestCase):
         self.clear_database_and_s3()
 
     def clear_database_and_s3(self):
+        # Ensure environment variables are set
+        os.environ['AWS_ACCESS_KEY_ID'] = 'dummy'
+        os.environ['AWS_SECRET_ACCESS_KEY'] = 'dummy'
+        os.environ['AWS_DEFAULT_REGION'] = 'us-east-1'
+        os.environ['DYNAMODB_ENDPOINT'] = 'http://localstack:4566'
+        os.environ['S3_ENDPOINT'] = 'http://localstack:4566'
+
         # Clear DynamoDB Table
         dynamodb = boto3.resource('dynamodb', endpoint_url=os.getenv('DYNAMODB_ENDPOINT'))
         table = dynamodb.Table('ItemsTable')
