@@ -21,8 +21,13 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
-    - name: Build Docker image
-      run: docker build . --file Dockerfile --tag my_rest_api:latest
+    - name: Set up Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
+    - name: Make test.sh executable
+        run: chmod +x ./test.sh
 
     - name: Run tests
-      run: ./test.sh
+        run: ./test.sh
