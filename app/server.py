@@ -11,28 +11,31 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        try:
-            if not self.path.startswith('/item'):
-                self._set_response(400)
-                self.wfile.write(json.dumps({'error': 'Invalid endpoint'}).encode())
-                return
+        if self.path == '/health':
+            self._set_response()
+            self.wfile.write(json.dumps({'status': 'healthy'}).encode())
+        else:
+            try:
+                if not self.path.startswith('/item'):
+                    self._set_response(400)
+                    self.wfile.write(json.dumps({'error': 'Invalid endpoint'}).encode())
+                    return
 
-            item_id = self.path.split('/')[-1]
-            if item_id:
-                item = self.db.get_item(item_id)
-                if item:
-                    self._set_response()
-                    self.wfile.write(json.dumps(item).encode())
+                item_id = self.path.split('/')[-1]
+                if item_id:
+                    item = self.db.get_item(item_id)
+                    if item:
+                        self._set_response()
+                        self.wfile.write(json.dumps(item).encode())
+                    else:
+                        self._set_response(404)
+                        self.wfile.write(json.dumps({'error': 'Item not found'}).encode())
                 else:
-                    self._set_response(404)
-                    self.wfile.write(json.dumps({'error': 'Item not found'}).encode())
-            else:
-                self._set_response(400)
-                self.wfile.write(json.dumps({'error': 'Item ID not provided'}).encode())
-        except Exception as e:
-            self._set_response(500)
-            self.wfile.write(json.dumps({'error': str(e)}).encode())
-            print(f"GET request failed: {str(e)}")
+                    self._set_response(400)
+                    self.wfile.write(json.dumps({'error': 'Item ID not provided'}).encode())
+            except Exception as e:
+                self._set_response(500)
+                self.wfile.write(json.dumps({'error': str(e)}).encode())
 
     def do_POST(self):
         try:
@@ -57,7 +60,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         except Exception as e:
             self._set_response(500)
             self.wfile.write(json.dumps({'error': str(e)}).encode())
-            print(f"POST request failed: {str(e)}")
 
     def do_PUT(self):
         try:
@@ -82,7 +84,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         except Exception as e:
             self._set_response(500)
             self.wfile.write(json.dumps({'error': str(e)}).encode())
-            print(f"PUT request failed: {str(e)}")
 
     def do_DELETE(self):
         try:
@@ -103,7 +104,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         except Exception as e:
             self._set_response(500)
             self.wfile.write(json.dumps({'error': str(e)}).encode())
-            print(f"DELETE request failed: {str(e)}")
 
 def run(server_class=HTTPServer, handler_class=RequestHandler, port=8000):
     server_address = ('', port)
