@@ -33,9 +33,11 @@ class S3Bucket:
             self.s3.put_object(Bucket=self.bucket_name, Key=key, Body=data)
         except ClientError as e:
             print(e.response['Error']['Message'])
+            raise
 
     def delete_object(self, key):
         try:
             self.s3.delete_object(Bucket=self.bucket_name, Key=key)
         except ClientError as e:
             print(e.response['Error']['Message'])
+            raise
