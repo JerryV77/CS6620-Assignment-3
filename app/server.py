@@ -1,11 +1,9 @@
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from app.db import Database
-from app.s3 import S3Bucket
 
 class RequestHandler(BaseHTTPRequestHandler):
     db = Database()
-    s3 = S3Bucket()
 
     def _set_response(self, status=200):
         self.send_response(status)
@@ -53,7 +51,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                 return
 
             self.db.put_item(item)
-            self.s3.put_object(item_id, post_data)
             self._set_response(201)
             self.wfile.write(json.dumps({'message': 'Item created'}).encode())
         except Exception as e:
@@ -78,7 +75,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                 return
 
             self.db.put_item(item)
-            self.s3.put_object(item_id, put_data)
             self._set_response(200)
             self.wfile.write(json.dumps({'message': 'Item updated'}).encode())
         except Exception as e:
@@ -99,7 +95,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                 return
 
             self.db.delete_item(item_id)
-            self.s3.delete_object(item_id)
             self._set_response(200)
             self.wfile.write(json.dumps({'message': 'Item deleted'}).encode())
         except Exception as e:
