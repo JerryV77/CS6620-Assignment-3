@@ -1,5 +1,6 @@
 import boto3
 import os
+import json
 from botocore.exceptions import ClientError
 from app.s3 import S3Bucket
 
@@ -46,6 +47,7 @@ class Database:
             self.s3.put_object(item['id'], json.dumps(item))
         except ClientError as e:
             print(e.response['Error']['Message'])
+            raise
 
     def delete_item(self, item_id):
         try:
@@ -53,3 +55,4 @@ class Database:
             self.s3.delete_object(item_id)
         except ClientError as e:
             print(e.response['Error']['Message'])
+            raise
