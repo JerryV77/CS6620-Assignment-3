@@ -1,0 +1,29 @@
+name: CI/CD (Part 3)
+
+on:
+  push:]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      docker:
+        image: docker:19.03.12
+        options: --privileged
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Build Docker image
+      run: docker build . --file Dockerfile --tag my_rest_api:latest
+
+    - name: Run tests
+      run: ./test.sh
+
