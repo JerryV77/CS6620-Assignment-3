@@ -32,6 +32,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         except Exception as e:
             self._set_response(500)
             self.wfile.write(json.dumps({'error': str(e)}).encode())
+            print(f"GET request failed: {str(e)}")
 
     def do_POST(self):
         try:
@@ -56,6 +57,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         except Exception as e:
             self._set_response(500)
             self.wfile.write(json.dumps({'error': str(e)}).encode())
+            print(f"POST request failed: {str(e)}")
 
     def do_PUT(self):
         try:
@@ -80,6 +82,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         except Exception as e:
             self._set_response(500)
             self.wfile.write(json.dumps({'error': str(e)}).encode())
+            print(f"PUT request failed: {str(e)}")
 
     def do_DELETE(self):
         try:
@@ -100,6 +103,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         except Exception as e:
             self._set_response(500)
             self.wfile.write(json.dumps({'error': str(e)}).encode())
+            print(f"DELETE request failed: {str(e)}")
 
 def run(server_class=HTTPServer, handler_class=RequestHandler, port=8000):
     server_address = ('', port)
