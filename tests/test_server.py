@@ -6,6 +6,8 @@ import requests
 from app.server import RequestHandler
 import boto3
 import os
+from app.db import Database
+from app.s3 import S3Bucket
 
 class TestServer(unittest.TestCase):
     @classmethod
@@ -45,20 +47,6 @@ class TestServer(unittest.TestCase):
         except s3.exceptions.NoSuchBucket:
             pass
 
-    def get_s3_object(self, key):
-        s3 = boto3.client('s3', endpoint_url=os.getenv('S3_ENDPOINT'))
-        try:
-            obj = s3.get_object(Bucket='my-bucket', Key=key)
-            return json.loads(obj['Body'].read().decode('utf-8'))
-        except s3.exceptions.NoSuchKey:
-            return None
-
-    def get_dynamodb_item(self, item_id):
-        dynamodb = boto3.resource('dynamodb', endpoint_url=os.getenv('DYNAMODB_ENDPOINT'))
-        table = dynamodb.Table('ItemsTable')
-        response = table.get_item(Key={'id': item_id})
-        return response.get('Item')
-
     def test_get_item(self):
         response = requests.get('http://localhost:8000/item/1')
         self.assertEqual(response.status_code, 404)
@@ -85,13 +73,15 @@ class TestServer(unittest.TestCase):
         self.assertEqual(response.json()['message'], 'Item created')
 
         # Verify DynamoDB Item
-        dynamodb_item = self.get_dynamodb_item('1')
+        db = Database()
+        dynamodb_item = db.get_item('1')
         self.assertIsNotNone(dynamodb_item)
         self.assertEqual(dynamodb_item['id'], '1')
         self.assertEqual(dynamodb_item['name'], 'Item 1')
 
         # Verify S3 Object
-        s3_item = self.get_s3_object('1')
+        s3 = S3Bucket()
+        s3_item = s3.get_object('1')
         self.assertIsNotNone(s3_item)
         self.assertEqual(s3_item, data)
 
@@ -117,13 +107,15 @@ class TestServer(unittest.TestCase):
         self.assertEqual(response.json()['message'], 'Item updated')
 
         # Verify DynamoDB Item
-        dynamodb_item = self.get_dynamodb_item('1')
+        db = Database()
+        dynamodb_item = db.get_item('1')
         self.assertIsNotNone(dynamodb_item)
         self.assertEqual(dynamodb_item['id'], '1')
         self.assertEqual(dynamodb_item['name'], 'Item 1 Updated')
 
         # Verify S3 Object
-        s3_item = self.get_s3_object('1')
+        s3 = S3Bucket()
+        s3_item = s3.get_object('1')
         self.assertIsNotNone(s3_item)
         self.assertEqual(s3_item, updated_data)
 
@@ -144,11 +136,13 @@ class TestServer(unittest.TestCase):
         self.assertEqual(response.json()['message'], 'Item deleted')
 
         # Verify DynamoDB Item
-        dynamodb_item = self.get_dynamodb_item('1')
+        db = Database()
+        dynamodb_item = db.get_item('1')
         self.assertIsNone(dynamodb_item)
 
         # Verify S3 Object
-        s3_item = self.get_s3_object('1')
+        s3 = S3Bucket()
+        s3_item = s3.get_object('1')
         self.assertIsNone(s3_item)
 
     def test_delete_item_no_target(self):
